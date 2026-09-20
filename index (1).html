@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skywalk Air Restro & Cafe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #201f1d;
+    --panel: #2b2a27;
+    --line: #3d3b37;
+    --text: #f1ece3;
+    --muted: #a8a196;
+    --amber: #e9a63b;
+    --ok: #7cc48a;
+    --bad: #e77a6b;
+    --head: "Bricolage Grotesque", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.45;
+  }
+  button { font: inherit; cursor: pointer; }
+  button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible {
+    outline: 3px solid var(--amber); outline-offset: 2px;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; }
+
+  header { padding: 22px 16px 10px; }
+  header h1 { font-family: var(--head); font-size: 1.7rem; margin: 0; line-height: 1.1; }
+  header p { margin: 6px 0 0; color: var(--muted); }
+  header p b { color: var(--amber); font-weight: 600; }
+
+  nav {
+    position: sticky; top: 0; z-index: 5; background: var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+  #chips { display: flex; gap: 8px; overflow-x: auto; padding: 10px 16px; scrollbar-width: none; }
+  #chips::-webkit-scrollbar { display: none; }
+  #chips a {
+    flex: none; padding: 7px 14px; border-radius: 999px; text-decoration: none;
+    color: var(--text); background: var(--panel); border: 1px solid var(--line); font-size: .92rem;
+  }
+
+  main { padding: 0 16px 140px; }
+  section { scroll-margin-top: 62px; }
+  section h2 { font-family: var(--head); font-size: 1.25rem; margin: 26px 0 10px; color: var(--amber); }
+
+  .dish {
+    display: grid; grid-template-columns: 76px 1fr auto; gap: 12px; align-items: center;
+    padding: 12px 0; border-bottom: 1px solid var(--line);
+  }
+  .thumb {
+    position: relative; width: 76px; height: 76px; border-radius: 12px; overflow: hidden;
+    background: var(--panel); display: grid; place-items: center;
+    font-family: var(--head); font-size: 1.6rem; color: var(--muted);
+  }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .dish h3 { margin: 0; font-size: 1rem; font-weight: 600; }
+  .dish p { margin: 2px 0 0; font-size: .82rem; color: var(--muted); }
+  .dish .price { display: block; margin-top: 4px; color: var(--amber); font-weight: 600; }
+
+  .add {
+    min-width: 76px; padding: 9px 14px; border-radius: 10px; border: 1.5px solid var(--amber);
+    background: transparent; color: var(--amber); font-weight: 600;
+  }
+  .step {
+    display: inline-flex; align-items: center; border-radius: 10px; background: var(--amber); color: #1b1a18;
+  }
+  .step button { width: 38px; height: 38px; border: 0; background: transparent; color: inherit; font-size: 1.2rem; font-weight: 700; }
+  .step span { min-width: 22px; text-align: center; font-weight: 700; }
+
+  #bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 8;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    background: var(--bg); border-top: 1px solid var(--line);
+  }
+  #bar .wrap button, .primary {
+    width: 100%; display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 16px; border: 0; border-radius: 12px; background: var(--amber); color: #1b1a18;
+    font-weight: 700; font-size: 1rem;
+  }
+  .primary { justify-content: center; }
+  .primary:disabled { opacity: .55; cursor: default; }
+
+  .sheet { position: fixed; inset: 0; z-index: 20; background: rgba(0,0,0,.6); display: flex; align-items: flex-end; }
+  .sheet[hidden], #done[hidden], #bar[hidden] { display: none; }
+  .sheet-inner {
+    width: 100%; max-width: 560px; margin: 0 auto; max-height: 92vh; overflow-y: auto;
+    background: var(--panel); border-radius: 18px 18px 0 0;
+    padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+  }
+  .sheet-head { display: flex; justify-content: space-between; align-items: center; }
+  .sheet-head h2 { font-family: var(--head); margin: 0; font-size: 1.3rem; }
+  .sheet-head button { width: 40px; height: 40px; border: 0; background: transparent; color: var(--text); font-size: 1.2rem; }
+  .line { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .line small { display: block; color: var(--muted); }
+  label { display: block; margin-top: 14px; font-size: .9rem; color: var(--muted); }
+  input, textarea {
+    display: block; width: 100%; margin-top: 6px; padding: 11px 12px; font: inherit; color: var(--text);
+    background: var(--bg); border: 1px solid var(--line); border-radius: 10px;
+  }
+  input[readonly] { color: var(--amber); }
+  .total { display: flex; justify-content: space-between; font-size: 1.15rem; margin: 18px 0 10px; }
+  .total b { color: var(--amber); }
+  #err { min-height: 1.3em; margin: 0 0 8px; color: var(--bad); font-size: .92rem; }
+
+  #done { position: fixed; inset: 0; z-index: 30; background: var(--bg); display: grid; place-items: center; padding: 24px; text-align: center; }
+  #done h2 { font-family: var(--head); font-size: 1.6rem; margin: 0 0 8px; }
+  #done p { color: var(--muted); margin: 0 0 22px; }
+  #done .state { color: var(--ok); font-weight: 600; margin-bottom: 26px; }
+  #done .primary { max-width: 320px; margin: 0 auto; }
+  #loading { padding: 40px 0; text-align: center; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Skywalk Air<br>Restro &amp; Cafe</h1>
+    <p id="tableLine"></p>
+  </header>
+  <nav><div id="chips"></div></nav>
+  <main>
+    <div id="loading">Loading menu...</div>
+    <div id="menu"></div>
+  </main>
+</div>
+
+<div id="bar" hidden>
+  <div class="wrap"><button id="openCart"><span id="barCount"></span><span id="barTotal"></span></button></div>
+</div>
+
+<div id="sheet" class="sheet" hidden>
+  <div class="sheet-inner" role="dialog" aria-modal="true" aria-label="Your order">
+    <div class="sheet-head"><h2>Your order</h2><button id="closeCart" aria-label="Close">&#10005;</button></div>
+    <div id="lines"></div>
+    <label>Table number
+      <input id="table" inputmode="numeric" autocomplete="off" placeholder="e.g. 5">
+    </label>
+    <label>Note for the kitchen (optional)
+      <textarea id="note" rows="2" placeholder="e.g. less spicy"></textarea>
+    </label>
+    <div class="total"><span>Total</span><b id="sum"></b></div>
+    <p id="err" role="alert"></p>
+    <button id="place" class="primary">Send order to kitchen</button>
+  </div>
+</div>
+
+<div id="done" hidden>
+  <div>
+    <h2>Order sent</h2>
+    <p>Table <span id="doneTable"></span></p>
+    <div class="state" id="doneState">Waiting for the kitchen to confirm.</div>
+    <button class="primary" id="again">Order something else</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAe_YNUjcL-ANqTH1YJ_u5EJ7mGZu-xQdw",
+    authDomain: "skyewalk-web.firebaseapp.com",
+    projectId: "skyewalk-web",
+    storageBucket: "skyewalk-web.firebasestorage.app",
+    messagingSenderId: "963472175218",
+    appId: "1:963472175218:web:7e27ae19ba16147ff652eb"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const rupee = n => "\u20B9" + n;
+
+  const tableFromUrl = (new URLSearchParams(location.search).get("table") || "").trim();
+  let items = [];
+  const cart = {};
+  let sheetOpen = false;
+
+  if (tableFromUrl) {
+    $("tableLine").innerHTML = "You are at <b>Table " + esc(tableFromUrl) + "</b>";
+    $("table").value = tableFromUrl;
+    $("table").readOnly = true;
+  } else {
+    $("tableLine").textContent = "Pick your dishes and send the order to the kitchen.";
+  }
+
+  /* ---------- menu ---------- */
+  async function loadMenu() {
+    try {
+      const snap = await db.collection("menu").get();
+      items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      items.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+      $("loading").hidden = true;
+      renderMenu();
+    } catch (e) {
+      $("loading").textContent = "Could not load the menu. Please refresh.";
+      console.error(e);
+    }
+  }
+
+  function ctlHtml(id) {
+    const q = cart[id] || 0;
+    if (!q) return `<button class="add" data-act="inc" data-id="${esc(id)}">Add</button>`;
+    return `<div class="step">
+      <button data-act="dec" data-id="${esc(id)}" aria-label="Remove one">&minus;</button>
+      <span>${q}</span>
+      <button data-act="inc" data-id="${esc(id)}" aria-label="Add one">+</button>
+    </div>`;
+  }
+
+  function dishHtml(i) {
+    const letter = esc((i.name || "?").charAt(0));
+    const img = i.image ? `<img src="${esc(i.image)}" alt="" loading="lazy">` : "";
+    return `<div class="dish">
+      <div class="thumb">${letter}${img}</div>
+      <div>
+        <h3>${esc(i.name)}</h3>
+        ${i.description ? `<p>${esc(i.description)}</p>` : ""}
+        <span class="price">${rupee(i.price)}</span>
+      </div>
+      <div data-ctl="${esc(i.id)}">${ctlHtml(i.id)}</div>
+    </div>`;
+  }
+
+  function renderMenu() {
+    const cats = [];
+    items.forEach(i => { if (!cats.includes(i.category)) cats.push(i.category); });
+    $("chips").innerHTML = cats.map((c, k) => `<a href="#cat-${k}">${esc(c)}</a>`).join("");
+    $("menu").innerHTML = cats.map((c, k) =>
+      `<section id="cat-${k}"><h2>${esc(c)}</h2>${items.filter(i => i.category === c).map(dishHtml).join("")}</section>`
+    ).join("");
+    document.querySelectorAll(".thumb img").forEach(img => img.addEventListener("error", () => img.remove()));
+  }
+
+  /* ---------- cart ---------- */
+  const lines = () => Object.keys(cart).map(id => {
+    const i = items.find(x => x.id === id);
+    return { id, name: i.name, price: i.price, qty: cart[id] };
+  });
+  const count = () => Object.values(cart).reduce((a, b) => a + b, 0);
+  const total = () => lines().reduce((s, l) => s + l.price * l.qty, 0);
+
+  function updateBar() {
+    const n = count();
+    $("bar").hidden = n === 0;
+    $("barCount").textContent = "View order \u00B7 " + n + (n === 1 ? " item" : " items");
+    $("barTotal").textContent = rupee(total());
+  }
+
+  function renderSheet() {
+    $("lines").innerHTML = lines().map(l => `<div class="line">
+      <div>${esc(l.name)}<small>${rupee(l.price)} each</small></div>
+      <div>${ctlHtml(l.id)}</div>
+    </div>`).join("");
+    $("sum").textContent = rupee(total());
+  }
+
+  function refresh(id) {
+    document.querySelectorAll(`[data-ctl="${id}"]`).forEach(el => { el.innerHTML = ctlHtml(id); });
+    updateBar();
+    if (sheetOpen) {
+      if (count() === 0) closeSheet(); else renderSheet();
+    }
+  }
+
+  document.addEventListener("click", e => {
+    const b = e.target.closest("[data-act]");
+    if (!b) return;
+    const id = b.dataset.id;
+    if (b.dataset.act === "inc") cart[id] = (cart[id] || 0) + 1;
+    if (b.dataset.act === "dec") { cart[id] = (cart[id] || 0) - 1; if (cart[id] <= 0) delete cart[id]; }
+    refresh(id);
+  });
+
+  function openSheet() { sheetOpen = true; $("err").textContent = ""; renderSheet(); $("sheet").hidden = false; }
+  function closeSheet() { sheetOpen = false; $("sheet").hidden = true; }
+  $("openCart").addEventListener("click", openSheet);
+  $("closeCart").addEventListener("click", closeSheet);
+  $("sheet").addEventListener("click", e => { if (e.target === $("sheet")) closeSheet(); });
+
+  /* ---------- place order ---------- */
+  $("place").addEventListener("click", async () => {
+    const table = $("table").value.trim();
+    if (!table) { $("err").textContent = "Please enter your table number."; $("table").focus(); return; }
+    if (count() === 0) return;
+    $("place").disabled = true;
+    $("err").textContent = "";
+    try {
+      const ref = await db.collection("orders").add({
+        table,
+        items: lines().map(l => ({ name: l.name, price: l.price, qty: l.qty })),
+        total: total(),
+        note: $("note").value.trim(),
+        status: "new",
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      closeSheet();
+      showDone(ref, table);
+    } catch (e) {
+      console.error(e);
+      $("err").textContent = "Could not send the order. Please try again.";
+      $("place").disabled = false;
+    }
+  });
+
+  function showDone(ref, table) {
+    $("doneTable").textContent = table;
+    $("done").hidden = false;
+    $("bar").hidden = true;
+    ref.onSnapshot(doc => {
+      const s = doc.data() && doc.data().status;
+      if (s === "confirmed") $("doneState").textContent = "The kitchen has confirmed your order.";
+      else if (s === "new") $("doneState").textContent = "Waiting for the kitchen to confirm.";
+      else if (s) $("doneState").textContent = "Status: " + s;
+    });
+  }
+  $("again").addEventListener("click", () => location.reload());
+
+  loadMenu();
+</script>
+</body>
+</html>

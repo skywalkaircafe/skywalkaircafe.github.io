@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1e4a3b">
+<meta name="robots" content="noindex">
+<title>Kitchen orders</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --oat: #f3eadb;
+    --paper: #fffaf1;
+    --ink: #2a1e17;
+    --muted: #75665a;
+    --line: #dfd2bd;
+    --green: #1e4a3b;
+    --green-d: #16382d;
+    --butter: #f5d06f;
+    --butter-l: #fbeab5;
+    --bad: #b23a2a;
+    --display: "Caprasimo", Georgia, "Times New Roman", serif;
+    --body: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--oat); color: var(--ink); font-family: var(--body); line-height: 1.45; }
+  button { font: inherit; cursor: pointer; }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+
+  /* ---------- shared header and awning edge ---------- */
+  .hero { background: var(--green); color: var(--oat); }
+  .awning {
+    height: 14px;
+    background: radial-gradient(circle at 14px 0, var(--green) 13.6px, transparent 14px) 0 0 / 28px 14px repeat-x;
+  }
+
+  /* ---------- login ---------- */
+  .login-hero { padding: 34px 22px 24px; }
+  .login-hero > div { max-width: 420px; margin: 0 auto; }
+  .login-hero h1 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 2.2rem; line-height: 1.05; color: var(--butter); }
+  .login-hero p { margin: 8px 0 0; }
+  #loginForm { max-width: 420px; margin: 0 auto; padding: 8px 22px 40px; }
+  label { display: block; margin-top: 16px; font-size: .9rem; color: var(--muted); }
+  input {
+    display: block; width: 100%; margin-top: 6px; padding: 13px 14px; font: inherit; color: var(--ink);
+    background: var(--paper); border: 1.5px solid var(--line); border-radius: 12px;
+  }
+  #loginErr { min-height: 1.3em; margin: 14px 0 8px; color: var(--bad); font-size: .92rem; }
+  .primary { width: 100%; padding: 15px 16px; border: 0; border-radius: 14px; background: var(--green); color: var(--oat); font-weight: 700; font-size: 1.02rem; }
+  .primary:disabled { opacity: .55; cursor: default; }
+
+  /* ---------- kitchen board ---------- */
+  .bar { padding: 18px 16px 16px; }
+  .bar-in { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .bar h1 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 1.9rem; line-height: 1.05; color: var(--butter); }
+  .bar p { margin: 2px 0 0; font-size: .92rem; opacity: .9; }
+  .tools { display: flex; gap: 8px; }
+  .pill { padding: 9px 15px; border-radius: 999px; border: 1.5px solid var(--oat); background: transparent; color: var(--oat); font-weight: 600; }
+  .pill[aria-pressed="true"] { background: var(--butter); border-color: var(--butter); color: var(--green-d); }
+
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 8px 16px 70px; }
+  #msg { min-height: 1.3em; margin: 10px 0 0; color: var(--bad); font-weight: 600; }
+  h2 { display: flex; align-items: center; gap: 10px; margin: 26px 0 12px; font-family: var(--display); font-weight: 400; font-size: 1.5rem; }
+  h2 span { min-width: 30px; padding: 2px 10px; border-radius: 999px; background: var(--butter); color: var(--green-d); font-family: var(--body); font-size: .95rem; font-weight: 700; text-align: center; }
+  h2 span:empty { display: none; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
+  .empty { margin: 0; padding: 6px 0; color: var(--muted); }
+
+  .card { display: flex; flex-direction: column; padding: 16px; border-radius: 18px; background: var(--paper); border: 1.5px solid var(--line); }
+  .card.new { border-color: var(--green); box-shadow: 0 0 0 4px var(--butter); }
+  .card.fresh { animation: arrive 3.5s ease-out; }
+  @keyframes arrive { from { background: var(--butter-l); } }
+  .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .tbl { font-family: var(--display); font-size: 1.9rem; line-height: 1.05; }
+  .age { flex: none; padding: 4px 11px; border-radius: 999px; font-size: .85rem; font-weight: 700; }
+  .age.ok { background: #e6dac6; color: var(--ink); }
+  .age.warn { background: var(--butter); color: var(--green-d); }
+  .age.late { background: var(--bad); color: #fff; }
+  .at { margin-top: 2px; font-size: .88rem; color: var(--muted); }
+  ul { list-style: none; margin: 12px 0; padding: 0; }
+  li { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 1.08rem; }
+  li:last-child { border-bottom: 0; }
+  li .q { min-width: 36px; color: var(--green); font-weight: 700; }
+  .note { margin: 0 0 12px; padding: 10px 12px; border-radius: 12px; background: var(--butter-l); font-weight: 600; }
+  .note b { display: block; font-size: .8rem; font-weight: 700; color: var(--muted); }
+  .foot { margin-top: auto; }
+  .total { display: flex; justify-content: space-between; margin-bottom: 12px; color: var(--muted); }
+  .total span:last-child { color: var(--ink); font-weight: 700; }
+  .act { width: 100%; padding: 15px; border: 0; border-radius: 14px; font-weight: 700; font-size: 1.05rem; }
+  .act:disabled { opacity: .55; cursor: default; }
+  .act.confirm { background: var(--green); color: var(--oat); }
+  .act.ready { background: var(--butter); color: var(--green-d); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="login" hidden>
+  <div class="hero login-hero">
+    <div>
+      <h1>Kitchen login</h1>
+      <p>Skywalk Air Restro &amp; Cafe</p>
+    </div>
+  </div>
+  <div class="awning" aria-hidden="true"></div>
+  <form id="loginForm">
+    <label>Email
+      <input id="email" type="email" autocomplete="username" required>
+    </label>
+    <label>Password
+      <input id="password" type="password" autocomplete="current-password" required>
+    </label>
+    <p id="loginErr" role="alert"></p>
+    <button class="primary" id="loginBtn" type="submit">Sign in</button>
+  </form>
+</div>
+
+<div id="app" hidden>
+  <header class="hero bar">
+    <div class="bar-in">
+      <div>
+        <h1>Kitchen orders</h1>
+        <p>Skywalk Air Restro &amp; Cafe</p>
+      </div>
+      <div class="tools">
+        <button class="pill" id="sound" type="button" aria-pressed="false">Sound off</button>
+        <button class="pill" id="signout" type="button">Sign out</button>
+      </div>
+    </div>
+  </header>
+  <div class="awning" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <p id="msg" role="alert"></p>
+
+    <h2>New orders <span id="nNew"></span></h2>
+    <div class="grid" id="newList"></div>
+
+    <h2>Preparing <span id="nConf"></span></h2>
+    <div class="grid" id="confList"></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyAe_YNUjcL-ANqTH1YJ_u5EJ7mGZu-xQdw",
+    authDomain: "skyewalk-web.firebaseapp.com",
+    projectId: "skyewalk-web",
+    storageBucket: "skyewalk-web.firebasestorage.app",
+    messagingSenderId: "963472175218",
+    appId: "1:963472175218:web:7e27ae19ba16147ff652eb"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const auth = firebase.auth();
+
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  /* ---------- login ---------- */
+  $("loginForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    $("loginErr").textContent = "";
+    $("loginBtn").disabled = true;
+    try {
+      await auth.signInWithEmailAndPassword($("email").value.trim(), $("password").value);
+    } catch (err) {
+      console.error(err);
+      $("loginErr").textContent = err.code === "auth/network-request-failed"
+        ? "No internet connection."
+        : "Wrong email or password.";
+    }
+    $("loginBtn").disabled = false;
+  });
+  $("signout").addEventListener("click", () => auth.signOut());
+
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      $("login").hidden = true;
+      $("app").hidden = false;
+      startListening();
+      keepAwake();
+    } else {
+      stopListening();
+      releaseAwake();
+      document.title = "Kitchen orders";
+      $("app").hidden = true;
+      $("login").hidden = false;
+      $("password").value = "";
+    }
+  });
+
+  /* ---------- keep the screen on while the kitchen board is open ---------- */
+  let wake = null;
+  async function keepAwake() {
+    try {
+      if ("wakeLock" in navigator && !wake && document.visibilityState === "visible") {
+        wake = await navigator.wakeLock.request("screen");
+        wake.addEventListener("release", () => { wake = null; });
+      }
+    } catch (err) { /* not supported or refused: ignore */ }
+  }
+  function releaseAwake() { if (wake) { wake.release().catch(() => {}); wake = null; } }
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && !$("app").hidden) keepAwake();
+  });
+
+  /* ---------- sound (needs one tap to enable) ---------- */
+  let soundOn = false, audioCtx = null;
+  $("sound").addEventListener("click", () => {
+    soundOn = !soundOn;
+    $("sound").setAttribute("aria-pressed", soundOn);
+    $("sound").textContent = soundOn ? "Sound on" : "Sound off";
+    if (soundOn) {
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.resume) audioCtx.resume();
+      beep();
+    }
+  });
+  function beep() {
+    if (!soundOn || !audioCtx) return;
+    const t = audioCtx.currentTime;
+    [[880, 0], [1175, 0.22]].forEach(([freq, delay]) => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0.18, t + delay);
+      g.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.2);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t + delay); o.stop(t + delay + 0.21);
+    });
+  }
+
+  /* ---------- orders ---------- */
+  const seen = new Set();
+  const fresh = new Set();
+  let firstLoad = true;
+  let unsub = null;
+
+  const timeOf = o => o.createdAt && o.createdAt.toDate ? o.createdAt.toDate() : null;
+  const clock = d => d ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "just now";
+
+  function ageInfo(ms) {
+    const m = Math.max(0, Math.floor((Date.now() - ms) / 60000));
+    const text = m < 1 ? "Just now" : m < 60 ? m + " min ago" : Math.floor(m / 60) + " h " + (m % 60) + " min ago";
+    return { text, cls: m >= 20 ? "late" : m >= 10 ? "warn" : "ok" };
+  }
+  function refreshAges() {
+    document.querySelectorAll(".age[data-t]").forEach(el => {
+      const a = ageInfo(Number(el.dataset.t));
+      el.textContent = a.text;
+      el.className = "age " + a.cls;
+    });
+  }
+  setInterval(refreshAges, 30000);
+
+  function cardHtml(o) {
+    const items = (o.items || []).map(i => `<li><span class="q">${esc(i.qty)}&times;</span><span>${esc(i.name)}</span></li>`).join("");
+    const isNew = o.status === "new";
+    const d = timeOf(o);
+    const ms = d ? d.getTime() : Date.now();
+    const a = ageInfo(ms);
+    return `<article class="card ${isNew ? "new" : ""} ${fresh.has(o.id) ? "fresh" : ""}">
+      <div class="head">
+        <div class="tbl">Table ${esc(o.table)}</div>
+        <span class="age ${a.cls}" data-t="${ms}">${a.text}</span>
+      </div>
+      <div class="at">Ordered ${clock(d)}</div>
+      <ul>${items}</ul>
+      ${o.note ? `<p class="note"><b>Note from customer</b>${esc(o.note)}</p>` : ""}
+      <div class="foot">
+        <div class="total"><span>Total</span><span>&#8377;${esc(o.total)}</span></div>
+        <button class="act ${isNew ? "confirm" : "ready"}" type="button" data-id="${esc(o.id)}" data-to="${isNew ? "confirmed" : "done"}">
+          ${isNew ? "Confirm order" : "Mark as ready"}
+        </button>
+      </div>
+    </article>`;
+  }
+
+  function render(orders) {
+    const byTime = (a, b) => (timeOf(a) || new Date()) - (timeOf(b) || new Date());
+    const fr = orders.filter(o => o.status === "new").sort(byTime);
+    const conf = orders.filter(o => o.status === "confirmed").sort(byTime);
+    $("nNew").textContent = fr.length ? fr.length : "";
+    $("nConf").textContent = conf.length ? conf.length : "";
+    document.title = (fr.length ? "(" + fr.length + ") " : "") + "Kitchen orders";
+    $("newList").innerHTML = fr.length ? fr.map(cardHtml).join("") : `<p class="empty">No new orders right now.</p>`;
+    $("confList").innerHTML = conf.length ? conf.map(cardHtml).join("") : `<p class="empty">Nothing is being prepared.</p>`;
+  }
+
+  function startListening() {
+    stopListening();
+    seen.clear();
+    fresh.clear();
+    firstLoad = true;
+    unsub = db.collection("orders").where("status", "in", ["new", "confirmed"]).onSnapshot(snap => {
+      $("msg").textContent = "";
+      const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const arrived = orders.filter(o => o.status === "new" && !seen.has(o.id));
+      if (!firstLoad && arrived.length) {
+        beep();
+        arrived.forEach(o => {
+          fresh.add(o.id);
+          setTimeout(() => fresh.delete(o.id), 4000);
+        });
+      }
+      orders.forEach(o => seen.add(o.id));
+      firstLoad = false;
+      render(orders);
+    }, err => {
+      console.error(err);
+      $("msg").textContent = "Could not load orders: " + err.message;
+    });
+  }
+  function stopListening() { if (unsub) { unsub(); unsub = null; } }
+
+  document.addEventListener("click", async e => {
+    const b = e.target.closest("[data-id]");
+    if (!b) return;
+    b.disabled = true;
+    try {
+      await db.collection("orders").doc(b.dataset.id).update({ status: b.dataset.to });
+    } catch (err) {
+      console.error(err);
+      $("msg").textContent = "Could not update the order. Please try again.";
+      b.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
